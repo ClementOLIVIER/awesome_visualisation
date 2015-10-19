@@ -112,31 +112,10 @@
                 }]
             });
 
-            // Add an action to the event "the value of the slider has changed"
-            $('#slider-0').on('change', function()
-            {
-                // As this event will be triggered every time the value is changed 
-                // (meaning for every value between the start position and 
-                // the end position when sliding), it can mean a lot of updating
-                // so a lot of computation. To avoid that, for each change, 
-                // a timer will start (duration 200ms, function setTimeout).
-                // If the timer is not stopped during this time, the function
-                // updateGraph will be called. 
-                // So when the "change" event is triggered, we first try to
-                // stop a previous timer (clearTimeout) and then start a new one. 
-                // That way, updates will be separated by at least 200ms, avoiding
-                // a CPU surcharge
-
-
-                clearTimeout(timeoutRefreshGraph) ;
-
-                timeoutRefreshGraph = setTimeout(function() 
-                {
-                    updateGraph() ;
-                }, 10);
-            }) ;
-			
-			$('#slider-1').on('change', function()
+            // For all input tags that are contained in the 
+            // variables form, update the graph if its values
+            // has changed
+            $("#formVariables input").on('change', function()
             {
                 clearTimeout(timeoutRefreshGraph) ;
 
@@ -145,47 +124,7 @@
                     updateGraph() ;
                 }, 10);
             }) ;
-			
-			$('#slider-2').on('change', function()
-            {
-                clearTimeout(timeoutRefreshGraph) ;
 
-                timeoutRefreshGraph = setTimeout(function() 
-                {
-                    updateGraph() ;
-                }, 10);
-            }) ;
-			
-			$('#slider-3').on('change', function()
-            {
-                clearTimeout(timeoutRefreshGraph) ;
-
-                timeoutRefreshGraph = setTimeout(function() 
-                {
-                    updateGraph() ;
-                }, 10);
-            }) ;
-			
-			
-			$('#slider-4').on('change', function()
-            {
-				clearTimeout(timeoutRefreshGraph) ;
-
-                timeoutRefreshGraph = setTimeout(function() 
-                {
-                    updateGraph() ;
-                }, 10);
-            }) ;
-			
-			$('#slider-5').on('change', function()
-            {
-                clearTimeout(timeoutRefreshGraph) ;
-
-                timeoutRefreshGraph = setTimeout(function() 
-                {
-                    updateGraph() ;
-                }, 10);
-            }) ;
         });
 		
     </script>
@@ -197,7 +136,7 @@
 <div id="container" style="min-width: 300px; height: 300px; margin: 1em"></div>
 
     
-    <form>
+    <form id="formVariables">
        <label for="slider-0">Input slider:</label>
        <input type="range" name="slider" id="slider-0" value="10" min="0" max="19"  />
     </form>
