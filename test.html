@@ -14,16 +14,31 @@
     <script src="http://code.highcharts.com/highcharts.js" type="text/javascript"></script>
     <script src="http://code.highcharts.com/modules/exporting.js" type="text/javascript"></script>
     <script src="http://cdnjs.cloudflare.com/ajax/libs/mathjs/2.4.0/math.min.js"></script>
-    <!-- Fix to make jQuery Mobile work with local files -->
+    
+	<!-- Load mathjs librairies -->
+	<script src="math.min.js" type="text/javascript"></script>
+	
+	
+	<!-- Fix to make jQuery Mobile work with local files -->
     <script>
         $(document).bind('mobileinit',function()
         {
             $.mobile.pushStateEnabled = false;
         });
     </script>
+	
     <script src="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js"></script>
-    <script type="text/javascript">
-        // Create a variable with a global scope to store the chart object
+    
+	<!-- Load "var data" from my_data.js-->
+	<script src="./my_data.js" type="text/javascript"></script>
+	
+	<!-- Parse data with mathjs and define compute function-->
+	<script src="./parse_and_compute.js" type="text/javascript"></script>
+	
+	<!-- Create view -->
+	<script type="text/javascript">
+			
+		// Create a variable with a global scope to store the chart object
         var chart ; 
         // A bit tricky, see at the end for some explanation about this variable
         var timeoutRefreshGraph ;
@@ -33,17 +48,20 @@
         {
             // Get the first serie of the graph, and the value of the slider
             var serie       = $(chart).highcharts().series[0] ;
-            var phase       = $('#slider-0').val() ;
-            var data        = [] ;
+            var p0       = $('#slider-0').val() ;
+			var p1       = $('#slider-1').val() ;
+			var p2       = $('#slider-2').val() ;
+			var p3       = $('#slider-3').val() ;
+			var p4       = $('#slider-4').val() ;
+			var p5       = $('#slider-5').val() ;
+			
+            var new_data        = [] ;
             
             // Populate the array of data
-            for ( var i = 0 ; i < 12 ; i++ )
-            {
-                data.push( math.sin( i * math.pi/6 + 2 * phase / 180.0 ) ) ;
-            }
-
+            new_data = compute([p0,p1,p2,p3,p4,p5]);
+			
             // Update the serie data and redraw the graph
-            serie.setData(data) ;
+            serie.setData(new_data) ;
         }
 
         // Part to make sure the page is properly loaded (HTML + Javascript)
@@ -52,28 +70,35 @@
             // Create the chart
             chart = $('#container').highcharts({
                 chart: {
-                    type: 'spline',
+					zoomType: 'xy',
+					animation : false,
+					type: 'line'
                 },
+				navigator :{
+					
+				},
                 title: {
-                    text: 'Monthly Average Temperature',
+                    text: 'Epsilon vs Sigma',
                     x: -20 //center
                 },
-                subtitle: {
-                    text: 'Source: WorldClimate.com',
-                    x: -20
-                },
+				xAxis: {
+					allowDecimals: true,
+					tickInterval: 1,
+					minorTickInterval: 10,
+
+					title: {
+						text: 'sigma'
+					}
+				},
                 yAxis: {
                     title: {
-                        text: 'Temperature (°C)'
+                        text: 'Sigma'
                     },
                     plotLines: [{
                         value: 0,
                         width: 1,
                         color: '#808080'
                     }]
-                },
-                tooltip: {
-                    valueSuffix: '°C'
                 },
                 legend: {
                     layout: 'vertical',
@@ -82,8 +107,8 @@
                     borderWidth: 0
                 },
                 series: [{
-                    name: 'Tokyo',
-                    data: [7.0, 6.9, 9.5, 14.5, 18.2, 21.5, 25.2, 26.5, 23.3, 18.3, 13.9, 9.6]
+                    name: 'Sigma',
+                    data: compute([5,5,5,5,5,5])
                 }]
             });
 
@@ -108,21 +133,101 @@
                 timeoutRefreshGraph = setTimeout(function() 
                 {
                     updateGraph() ;
-                }, 200);
+                }, 10);
+            }) ;
+			
+			$('#slider-1').on('change', function()
+            {
+                clearTimeout(timeoutRefreshGraph) ;
+
+                timeoutRefreshGraph = setTimeout(function() 
+                {
+                    updateGraph() ;
+                }, 10);
+            }) ;
+			
+			$('#slider-2').on('change', function()
+            {
+                clearTimeout(timeoutRefreshGraph) ;
+
+                timeoutRefreshGraph = setTimeout(function() 
+                {
+                    updateGraph() ;
+                }, 10);
+            }) ;
+			
+			$('#slider-3').on('change', function()
+            {
+                clearTimeout(timeoutRefreshGraph) ;
+
+                timeoutRefreshGraph = setTimeout(function() 
+                {
+                    updateGraph() ;
+                }, 10);
+            }) ;
+			
+			
+			$('#slider-4').on('change', function()
+            {
+				clearTimeout(timeoutRefreshGraph) ;
+
+                timeoutRefreshGraph = setTimeout(function() 
+                {
+                    updateGraph() ;
+                }, 10);
+            }) ;
+			
+			$('#slider-5').on('change', function()
+            {
+                clearTimeout(timeoutRefreshGraph) ;
+
+                timeoutRefreshGraph = setTimeout(function() 
+                {
+                    updateGraph() ;
+                }, 10);
             }) ;
         });
+		
     </script>
+	
 	
 </head>
 <body>
 
-    <div id="container" style="min-width: 310px; height: 400px; margin: 0 auto"></div>
+<div id="container" style="min-width: 300px; height: 300px; margin: 1em"></div>
 
+    
     <form>
        <label for="slider-0">Input slider:</label>
-       <input type="range" name="slider" id="slider-0" value="25" min="0" max="180"  />
+       <input type="range" name="slider" id="slider-0" value="10" min="0" max="19"  />
+    </form>
+	
+	<form>
+       <label for="slider-1">Input slider:</label>
+       <input type="range" name="slider" id="slider-1" value="10" min="0" max="19"  />
+    </form>
+	
+	<form>
+       <label for="slider-2">Input slider:</label>
+       <input type="range" name="slider" id="slider-2" value="10" min="0" max="19"  />
+    </form>
+	
+	<form>
+       <label for="slider-3">Input slider:</label>
+       <input type="range" name="slider" id="slider-3" value="10" min="0" max="19"  />
+    </form>
+	
+	<form>
+       <label for="slider-4">Input slider:</label>
+       <input type="range" name="slider" id="slider-4" value="10" min="0" max="19"  />
+    </form>
+	
+	<form>
+       <label for="slider-5">Input slider:</label>
+       <input type="range" name="slider" id="slider-5" value="10" min="0" max="19"  />
     </form>
 
-
+	
 </body>
+
 </html>
