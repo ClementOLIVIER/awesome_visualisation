@@ -72,7 +72,7 @@
                 chart: {
 					zoomType: 'xy',
 					animation : false,
-					type: 'line'
+					type: 'scatter'
                 },
 				navigator :{
 					
@@ -83,8 +83,8 @@
                 },
 				xAxis: {
 					allowDecimals: true,
-					tickInterval: 1,
-					minorTickInterval: 10,
+					tickInterval: 0.5,
+					minorTickInterval: 0.5,
 
 					title: {
 						text: 'sigma'
@@ -105,6 +105,11 @@
                     align: 'right',
                     verticalAlign: 'middle',
                     borderWidth: 0
+                },
+                plotOptions: {
+                    series: {
+                        lineWidth: 1,
+                    },
                 },
                 series: [{
                     name: 'Sigma',
