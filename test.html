@@ -14,7 +14,8 @@
     <script src="http://code.highcharts.com/highcharts.js" type="text/javascript"></script>
     <script src="http://code.highcharts.com/modules/exporting.js" type="text/javascript"></script>
     <script src="http://cdnjs.cloudflare.com/ajax/libs/mathjs/2.4.0/math.min.js"></script>
-    
+	
+	
 	<!-- Load mathjs librairies -->
 	<script src="math.min.js" type="text/javascript"></script>
 	
@@ -57,6 +58,7 @@
 			
             var new_data        = [] ;
             
+			console.log([p0,p1,p2,p3,p4,p5])
             // Populate the array of data
             new_data = compute([p0,p1,p2,p3,p4,p5]);
 			
@@ -87,12 +89,12 @@
 					minorTickInterval: 0.5,
 
 					title: {
-						text: 'sigma'
+						text: 'Sigma'
 					}
 				},
                 yAxis: {
                     title: {
-                        text: 'Sigma'
+                        text: 'Epsilon'
                     },
                     plotLines: [{
                         value: 0,
@@ -108,19 +110,22 @@
                 },
                 plotOptions: {
                     series: {
-                        lineWidth: 1,
+                        lineWidth: 2,
+						animation : false
                     },
                 },
                 series: [{
                     name: 'Sigma',
-                    data: compute([5,5,5,5,5,5])
+                    //data: compute([10,10,10,10,10,10])
                 }]
             });
+			
+			updateGraph();
 
             // For all input tags that are contained in the 
             // variables form, update the graph if its values
             // has changed
-            $("#formVariables input").on('change', function()
+            $(".formVariables input").on('change', function()
             {
                 clearTimeout(timeoutRefreshGraph) ;
 
@@ -129,6 +134,8 @@
                     updateGraph() ;
                 }, 10);
             }) ;
+			
+			
 
         });
 		
@@ -138,35 +145,35 @@
 </head>
 <body>
 
-<div id="container" style="min-width: 300px; height: 300px; margin: 1em"></div>
+<div id="container" style="min-width: 300px; height: 600px; margin: 1em"></div>
 
     
-    <form id="formVariables">
+    <form class="formVariables">
        <label for="slider-0">Input slider:</label>
        <input type="range" name="slider" id="slider-0" value="10" min="0" max="19"  />
     </form>
 	
-	<form>
+	<form class="formVariables">
        <label for="slider-1">Input slider:</label>
        <input type="range" name="slider" id="slider-1" value="10" min="0" max="19"  />
     </form>
 	
-	<form>
+	<form class="formVariables">
        <label for="slider-2">Input slider:</label>
        <input type="range" name="slider" id="slider-2" value="10" min="0" max="19"  />
     </form>
 	
-	<form>
+	<form class="formVariables">
        <label for="slider-3">Input slider:</label>
        <input type="range" name="slider" id="slider-3" value="10" min="0" max="19"  />
     </form>
 	
-	<form>
+	<form class="formVariables">
        <label for="slider-4">Input slider:</label>
        <input type="range" name="slider" id="slider-4" value="10" min="0" max="19"  />
     </form>
 	
-	<form>
+	<form class="formVariables">
        <label for="slider-5">Input slider:</label>
        <input type="range" name="slider" id="slider-5" value="10" min="0" max="19"  />
     </form>

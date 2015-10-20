@@ -49,3 +49,43 @@ function compute(pt)
 		}
 		return val
 	}
+	
+
+
+function compute2(pt)
+	{
+		val = []
+		for(var i_comp = 0; i_comp < Nb_comp ; i_comp++)
+		{
+			var tmp = W_out[i_comp];
+			for(var dim = 0; dim < dim_in ; dim++)
+			{
+				tmp = math.multiply(tmp,W[i_comp][dim][pt[dim]]);
+			}
+			
+			val_tmp = [];
+			
+			val_tmp.push(time[i_comp]);
+			val_tmp.push(tmp);
+			
+			val.push(val_tmp);
+		}
+		return val
+	}
+	
+function compute_bis(pt)
+	{
+		val = []
+		for(var i_comp = 0; i_comp < Nb_comp ; i_comp++)
+		{
+			var tmp = W_out[i_comp];
+			for(var dim = 0; dim < dim_in ; dim++)
+			{
+				tmp = math.multiply(tmp,W[i_comp][dim][pt[dim]]);
+			}
+			
+			val.push(tmp);
+			
+		}
+		return val
+	}
