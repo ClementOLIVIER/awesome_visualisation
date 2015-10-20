@@ -14,8 +14,7 @@
     <script src="http://code.highcharts.com/highcharts.js" type="text/javascript"></script>
     <script src="http://code.highcharts.com/modules/exporting.js" type="text/javascript"></script>
     <script src="http://cdnjs.cloudflare.com/ajax/libs/mathjs/2.4.0/math.min.js"></script>
-	
-	
+    
 	<!-- Load mathjs librairies -->
 	<script src="math.min.js" type="text/javascript"></script>
 	
@@ -31,7 +30,7 @@
     <script src="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js"></script>
     
 	<!-- Load "var data" from my_data.js-->
-	<script src="./my_data_min.js" type="text/javascript"></script>
+	<script src="./my_data_min_2.js" type="text/javascript"></script>
 	
 	<!-- Parse data with mathjs and define compute function-->
 	<script src="./parse_and_compute.js" type="text/javascript"></script>
@@ -40,7 +39,7 @@
 	<script type="text/javascript">
 			
 		// Create a variable with a global scope to store the chart object
-        var chart ; 
+        var chart,chart2 ; 
         // A bit tricky, see at the end for some explanation about this variable
         var timeoutRefreshGraph ;
 
@@ -49,6 +48,7 @@
         {
             // Get the first serie of the graph, and the value of the slider
             var serie       = $(chart).highcharts().series[0] ;
+			var serie2       = $(chart2).highcharts().series[0] ;
             var p0       = $('#slider-0').val() ;
 			var p1       = $('#slider-1').val() ;
 			var p2       = $('#slider-2').val() ;
@@ -58,12 +58,14 @@
 			
             var new_data        = [] ;
             
-			console.log([p0,p1,p2,p3,p4,p5])
-            // Populate the array of data
+			// Populate the array of data
             new_data = compute([p0,p1,p2,p3,p4,p5]);
+			new_data2 = compute2([p0,p1,p2,p3,p4,p5]);
 			
             // Update the serie data and redraw the graph
             serie.setData(new_data) ;
+			serie2.setData(new_data2) ;
+			
         }
 
         // Part to make sure the page is properly loaded (HTML + Javascript)
@@ -76,18 +78,13 @@
 					animation : false,
 					type: 'scatter'
                 },
-				navigator :{
-					
-				},
                 title: {
                     text: 'Epsilon vs Sigma',
                     x: -20 //center
                 },
 				xAxis: {
 					allowDecimals: true,
-					tickInterval: 0.5,
-					minorTickInterval: 0.5,
-
+					
 					title: {
 						text: 'Sigma'
 					}
@@ -100,7 +97,9 @@
                         value: 0,
                         width: 1,
                         color: '#808080'
-                    }]
+                    }],
+					min: -0.1,
+					max: 0.1
                 },
                 legend: {
                     layout: 'vertical',
@@ -111,17 +110,69 @@
                 plotOptions: {
                     series: {
                         lineWidth: 2,
-						animation : false
+						animation : false,
+						marker: {
+							enabled: false
+						}
                     },
                 },
                 series: [{
                     name: 'Sigma',
-                    //data: compute([10,10,10,10,10,10])
+                    data: compute([10,10,10,10,10,10])
                 }]
             });
 			
-			updateGraph();
-
+			chart2 = $('#container2').highcharts({
+                chart: {
+					zoomType: 'xy',
+					animation : false,
+					type: 'scatter'
+                },
+                title: {
+                    text: 'Epsilon vs Sigma',
+                    x: -20 //center
+                },
+				xAxis: {
+					allowDecimals: true,
+					
+					title: {
+						text: 'Sigma'
+					}
+				},
+                yAxis: {
+                    title: {
+                        text: 'Epsilon'
+                    },
+                    plotLines: [{
+                        value: 0,
+                        width: 1,
+                        color: '#808080'
+                    }],
+					min: -0.1,
+					max: 0.1
+                },
+                legend: {
+                    layout: 'vertical',
+                    align: 'right',
+                    verticalAlign: 'middle',
+                    borderWidth: 0
+                },
+                plotOptions: {
+                    series: {
+                        lineWidth: 2,
+						animation : false,
+						marker: {
+							enabled: false
+						}
+                    },
+                },
+                series: [{
+                    name: 'Sigma',
+                    data: compute2([10,10,10,10,10,10])
+                }]
+            });
+			
+			
             // For all input tags that are contained in the 
             // variables form, update the graph if its values
             // has changed
@@ -141,11 +192,15 @@
 		
     </script>
 	
-	
+
+
 </head>
 <body>
 
-<div id="container" style="min-width: 300px; height: 600px; margin: 1em"></div>
+
+<div id="container" style="min-width: 150px; height: 600px; margin: 1em"></div>
+
+<div id="container2" style="min-width: 150px; height: 600px; margin: 1em"></div>
 
     
     <form class="formVariables">
@@ -180,5 +235,7 @@
 
 	
 </body>
+
+
 
 </html>
