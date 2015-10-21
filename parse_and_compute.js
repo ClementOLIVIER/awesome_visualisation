@@ -40,12 +40,7 @@ function compute(pt)
 				tmp = math.multiply(tmp,W[i_comp][dim][pt[dim]]);
 			}
 			
-			val_tmp = [];
-			
-			val_tmp.push(sigma[i_comp]);
-			val_tmp.push(tmp);
-			
-			val.push(val_tmp);
+			val.push([sigma[i_comp], tmp]);
 		}
 		return val
 	}

@@ -175,8 +175,31 @@
                 timeoutRefreshGraph = setTimeout(function() 
                 {
                     updateGraph() ;
-                }, 10);
+                }, 50);
             }) ;
+
+            $(".formVariables input[type=range]").on('input', function()
+            {
+                $(this).trigger('change');
+            });
+
+
+            // Display a tooltip containing the current value when changing values
+            $(".formVariables input").on('mousedown', function(e)
+            {
+                $(".formVariables input").on('mousemove', function(e)
+                {
+                    console.log(e) ;
+                }); 
+            }) ;
+            // Remove the tooltip when the input loose the focus
+            $(".formVariables input").on('mouseup', function(e)
+            {
+                $(".formVariables input").off('mousemove') ;
+            }) ;
+
+
+
 			
 			
 
@@ -245,6 +268,7 @@
 
                                <label for="slider-5">Input slider:</label>
                                <input type="range" class="mdl-slider mdl-js-slider"name="slider" id="slider-5" value="10" min="0" max="19"  />
+
                             </form>
                         </div>
                     </div><!-- End grid case -->
