@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Page Title</title>
+
+	<meta name="viewport" content="width=device-width, initial-scale=1"> 
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
+    <!-- Load CSS -->
+    <link rel="stylesheet" href="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.css" />	
+    
+    <!-- Load javascript librairies in the right order -->
+    <script src="http://code.jquery.com/jquery-1.9.1.min.js"></script>
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/mathjs/2.4.0/math.min.js"></script>
+    
+	<script type="text/javascript" src="d3.v3.min.js"></script>
+	<script type="text/javascript" src="plotly.min.js"></script>
+	
+	<!-- Fix to make jQuery Mobile work with local files -->
+    <script>
+        $(document).bind('mobileinit',function()
+        {
+            $.mobile.pushStateEnabled = false;
+        });
+    </script>
+	
+    <script src="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js"></script>
+    
+	<!-- Load "var data" from my_data.js-->
+	<script src="./my_data_min.js" type="text/javascript"></script>
+	
+	<!-- Parse data with mathjs and define compute function-->
+	<script src="./parse_and_compute.js" type="text/javascript"></script>
+	
+	<!-- Create view -->
+	<script type="text/javascript">
+			
+        // A bit tricky, see at the end for some explanation about this variable
+        var timeoutRefreshGraph ;
+
+        // Define a function to update the graph
+        function updateGraph()
+        {
+            // Get the first serie of the graph, and the value of the slider
+            var p0       = $('#slider-0').val() ;
+			var p1       = $('#slider-1').val() ;
+			var p2       = $('#slider-2').val() ;
+			var p3       = $('#slider-3').val() ;
+			var p4       = $('#slider-4').val() ;
+			var p5       = $('#slider-5').val() ;
+			
+            var new_data        = [] ;
+            
+			// Populate the array of data
+            new_data2 = compute2([p0,p1,p2,p3,p4,p5]);
+			data_plotly = [{x:sigma,y:new_data2}];
+			
+			Plotly.deleteTraces(cont, 0);
+			Plotly.plot(cont,data_plotly);
+			
+        }
+
+        
+            // For all input tags that are contained in the 
+            // variables form, update the graph if its values
+            // has changed
+			 $(function() 
+        {
+            $(".formVariables input").on('change', function()
+            {
+                clearTimeout(timeoutRefreshGraph) ;
+
+                timeoutRefreshGraph = setTimeout(function() 
+                {
+                    updateGraph() ;
+                }, 10);
+            }) ;
+			});
+			
+			
+		
+    </script>
+	
+
+
+</head>
+<body>
+
+<div id="tester" style="width:100%;height:600px; margin: 1em"></div>
+
+    
+    <form class="formVariables">
+       <label for="slider-0">Input slider:</label>
+       <input type="range" name="slider" id="slider-0" value="10" min="0" max="19"  />
+    </form>
+	
+	<form class="formVariables">
+       <label for="slider-1">Input slider:</label>
+       <input type="range" name="slider" id="slider-1" value="10" min="0" max="19"  />
+    </form>
+	
+	<form class="formVariables">
+       <label for="slider-2">Input slider:</label>
+       <input type="range" name="slider" id="slider-2" value="10" min="0" max="19"  />
+    </form>
+	
+	<form class="formVariables">
+       <label for="slider-3">Input slider:</label>
+       <input type="range" name="slider" id="slider-3" value="10" min="0" max="19"  />
+    </form>
+	
+	<form class="formVariables">
+       <label for="slider-4">Input slider:</label>
+       <input type="range" name="slider" id="slider-4" value="10" min="0" max="19"  />
+    </form>
+	
+	<form class="formVariables">
+       <label for="slider-5">Input slider:</label>
+       <input type="range" name="slider" id="slider-5" value="10" min="0" max="19"  />
+    </form>
+
+	
+</body>
+
+	<script>
+	var cont = document.getElementById('tester');
+	var data_plotly = [{x:sigma,y:compute2([10,10,10,10,10,10])}]
+	Plotly.plot(cont,data_plotly);
+	
+</script>
+
+
+</html>
