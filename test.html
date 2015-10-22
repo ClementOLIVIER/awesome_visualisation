@@ -6,23 +6,28 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1"> 
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 
-
+    <!-- Load CSS -->
+    <link rel="stylesheet" href="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.css" />	
+    
     <!-- Load javascript librairies in the right order -->
     <script src="http://code.jquery.com/jquery-1.9.1.min.js"></script>
-    <script src="http://code.highcharts.com/highcharts.js" type="text/javascript"></script>
-    <script src="http://code.highcharts.com/modules/exporting.js" type="text/javascript"></script>
     <script src="http://cdnjs.cloudflare.com/ajax/libs/mathjs/2.4.0/math.min.js"></script>
     
-	<!-- Load mathjs librairies -->
-	<script src="math.min.js" type="text/javascript"></script>
-
-    <!-- Load Material Design components -->
-    <link rel="stylesheet" href="css/material.min.css">
-    <script src="js/material.min.js"></script>	
-	<link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+	<script type="text/javascript" src="d3.v3.min.js"></script>
+	<script type="text/javascript" src="plotly.min.js"></script>
+	
+	<!-- Fix to make jQuery Mobile work with local files -->
+    <script>
+        $(document).bind('mobileinit',function()
+        {
+            $.mobile.pushStateEnabled = false;
+        });
+    </script>
+	
+    <script src="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js"></script>
     
 	<!-- Load "var data" from my_data.js-->
-	<script src="./my_data_min_2.js" type="text/javascript"></script>
+	<script src="./my_data_min.js" type="text/javascript"></script>
 	
 	<!-- Parse data with mathjs and define compute function-->
 	<script src="./parse_and_compute.js" type="text/javascript"></script>
@@ -30,8 +35,6 @@
 	<!-- Create view -->
 	<script type="text/javascript">
 			
-		// Create a variable with a global scope to store the chart object
-        var chart,chart2 ; 
         // A bit tricky, see at the end for some explanation about this variable
         var timeoutRefreshGraph ;
 
@@ -39,8 +42,6 @@
         function updateGraph()
         {
             // Get the first serie of the graph, and the value of the slider
-            var serie       = $(chart).highcharts().series[0] ;
-			var serie2       = $(chart2).highcharts().series[0] ;
             var p0       = $('#slider-0').val() ;
 			var p1       = $('#slider-1').val() ;
 			var p2       = $('#slider-2').val() ;
@@ -51,123 +52,20 @@
             var new_data        = [] ;
             
 			// Populate the array of data
-            new_data = compute([p0,p1,p2,p3,p4,p5]);
-			new_data2 = compute2([p0,p1,p2,p3,p4,p5]);
+            new_data2 = compute2([p0,p1,p2,p3,p4,p5]);
+			data_plotly = [{x:sigma,y:new_data2}];
 			
-            // Update the serie data and redraw the graph
-            serie.setData(new_data) ;
-			serie2.setData(new_data2) ;
+			Plotly.deleteTraces(cont, 0);
+			Plotly.plot(cont,data_plotly);
 			
         }
 
-        // Part to make sure the page is properly loaded (HTML + Javascript)
-        $(function() 
-        {            
-            // Create the chart
-            chart = $('#container').highcharts({
-                chart: {
-					zoomType: 'xy',
-					animation : false,
-					type: 'scatter'
-                },
-                title: {
-                    text: 'Epsilon vs Sigma',
-                    x: -20 //center
-                },
-				xAxis: {
-					allowDecimals: true,
-					
-					title: {
-						text: 'Sigma'
-					}
-				},
-                yAxis: {
-                    title: {
-                        text: 'Epsilon'
-                    },
-                    plotLines: [{
-                        value: 0,
-                        width: 1,
-                        color: '#808080'
-                    }],
-					min: -0.1,
-					max: 0.1
-                },
-                legend: {
-                    layout: 'vertical',
-                    align: 'right',
-                    verticalAlign: 'middle',
-                    borderWidth: 0
-                },
-                plotOptions: {
-                    series: {
-                        lineWidth: 2,
-						animation : false,
-						marker: {
-							enabled: false
-						}
-                    },
-                },
-                series: [{
-                    name: 'Sigma',
-                    data: compute([10,10,10,10,10,10])
-                }]
-            });
-			
-			chart2 = $('#container2').highcharts({
-                chart: {
-					zoomType: 'xy',
-					animation : false,
-					type: 'scatter'
-                },
-                title: {
-                    text: 'Epsilon vs Sigma',
-                    x: -20 //center
-                },
-				xAxis: {
-					allowDecimals: true,
-					
-					title: {
-						text: 'Sigma'
-					}
-				},
-                yAxis: {
-                    title: {
-                        text: 'Epsilon'
-                    },
-                    plotLines: [{
-                        value: 0,
-                        width: 1,
-                        color: '#808080'
-                    }],
-					min: -0.1,
-					max: 0.1
-                },
-                legend: {
-                    layout: 'vertical',
-                    align: 'right',
-                    verticalAlign: 'middle',
-                    borderWidth: 0
-                },
-                plotOptions: {
-                    series: {
-                        lineWidth: 2,
-						animation : false,
-						marker: {
-							enabled: false
-						}
-                    },
-                },
-                series: [{
-                    name: 'Sigma',
-                    data: compute2([10,10,10,10,10,10])
-                }]
-            });
-			
-			
+        
             // For all input tags that are contained in the 
             // variables form, update the graph if its values
             // has changed
+			 $(function() 
+        {
             $(".formVariables input").on('change', function()
             {
                 clearTimeout(timeoutRefreshGraph) ;
@@ -175,35 +73,11 @@
                 timeoutRefreshGraph = setTimeout(function() 
                 {
                     updateGraph() ;
-                }, 50);
+                }, 10);
             }) ;
-
-            $(".formVariables input[type=range]").on('input', function()
-            {
-                $(this).trigger('change');
-            });
-
-
-            // Display a tooltip containing the current value when changing values
-            $(".formVariables input").on('mousedown', function(e)
-            {
-                $(".formVariables input").on('mousemove', function(e)
-                {
-                    console.log(e) ;
-                }); 
-            }) ;
-            // Remove the tooltip when the input loose the focus
-            $(".formVariables input").on('mouseup', function(e)
-            {
-                $(".formVariables input").off('mousemove') ;
-            }) ;
-
-
-
+			});
 			
 			
-
-        });
 		
     </script>
 	
@@ -212,73 +86,48 @@
 </head>
 <body>
 
+<div id="tester" style="width:100%;height:600px; margin: 1em"></div>
 
-    <div class="mdl-layout mdl-js-layout mdl-color--grey-100  mdl-layout--fixed-header">
-        
-        <!-- Uses a header that scrolls with the text, rather than staying locked at the top -->
-        <header class="mdl-layout__header is-casting-shadow">
-            <div class="mdl-layout__header-row">
-                <!-- Title -->
-                <span class="mdl-layout-title">Title</span>
-                <!-- Add spacer, to align navigation to the right -->
-                <div class="mdl-layout-spacer"></div>
-                <!-- Navigation -->
-                    <nav class="mdl-navigation">
-                        <a class="mdl-navigation__link" href="">Link</a>
-                        <a class="mdl-navigation__link" href="">Link</a>
-                        <a class="mdl-navigation__link" href="">Link</a>
-                        <a class="mdl-navigation__link" href="">Link</a>
-                    </nav>
-            </div>
-        </header>
+    
+    <form class="formVariables">
+       <label for="slider-0">Input slider:</label>
+       <input type="range" name="slider" id="slider-0" value="10" min="0" max="19"  />
+    </form>
+	
+	<form class="formVariables">
+       <label for="slider-1">Input slider:</label>
+       <input type="range" name="slider" id="slider-1" value="10" min="0" max="19"  />
+    </form>
+	
+	<form class="formVariables">
+       <label for="slider-2">Input slider:</label>
+       <input type="range" name="slider" id="slider-2" value="10" min="0" max="19"  />
+    </form>
+	
+	<form class="formVariables">
+       <label for="slider-3">Input slider:</label>
+       <input type="range" name="slider" id="slider-3" value="10" min="0" max="19"  />
+    </form>
+	
+	<form class="formVariables">
+       <label for="slider-4">Input slider:</label>
+       <input type="range" name="slider" id="slider-4" value="10" min="0" max="19"  />
+    </form>
+	
+	<form class="formVariables">
+       <label for="slider-5">Input slider:</label>
+       <input type="range" name="slider" id="slider-5" value="10" min="0" max="19"  />
+    </form>
 
-        <main class="mdl-layout__content">
-            <div class="page-content">
- 
-                <div class="mdl-grid">
-                    <!-- Grid case containing the graphs -->
-                    <div class="mdl-cell mdl-shadow--2dp mdl-color--white mdl-cell--10-col">
-                        <div  id="container" style="width:95%; margin: 0 auto ;"></div>
-                        <div id="container2" style="width:95%; margin: 0 auto ;"></div>
-                    </div>
-
-                    <!-- Grid case for sliders and configuration in general -->
-                    <div class="mdl-card mdl-color--deep-purple-500 mdl-shadow--2dp mdl-cell mdl-cell--2-col mdl-cell--8-col-tablet mdl-cell--8-col-phone mdl-color--deep-purple-400 mdl-shadow--2dp">
-                        <div class="mdl-card__title">
-                            <h2 class="mdl-card__title-text">Parameters</h2>
-                        </div>
-
-                        <div class="mdl-card__supporting-text mdl-color-text--blue-grey-50">
-
-                            <form class="formVariables">
-                               <label for="slider-0">Input slider:</label>
-                               <input type="range" class="mdl-slider mdl-js-slider" name="slider" id="slider-0" value="10" min="0" max="19"  />
-
-                               <label for="slider-1">Input slider:</label>
-                               <input type="range" class="mdl-slider mdl-js-slider" name="slider" id="slider-1" value="10" min="0" max="19"  />
-
-                               <label for="slider-2">Input slider:</label>
-                               <input type="range" class="mdl-slider mdl-js-slider" name="slider" id="slider-2" value="10" min="0" max="19"  />
-
-                               <label for="slider-3">Input slider:</label>
-                               <input type="range" class="mdl-slider mdl-js-slider" name="slider" id="slider-3" value="10" min="0" max="19"  />
-
-                               <label for="slider-4">Input slider:</label>
-                               <input type="range" class="mdl-slider mdl-js-slider" name="slider" id="slider-4" value="10" min="0" max="19"  />
-
-                               <label for="slider-5">Input slider:</label>
-                               <input type="range" class="mdl-slider mdl-js-slider"name="slider" id="slider-5" value="10" min="0" max="19"  />
-
-                            </form>
-                        </div>
-                    </div><!-- End grid case -->
-                </div>  <!-- End grid -->                  
-            </div>
-        </main>
-    </div>
 	
 </body>
 
+	<script>
+	var cont = document.getElementById('tester');
+	var data_plotly = [{x:sigma,y:compute2([10,10,10,10,10,10])}]
+	Plotly.plot(cont,data_plotly);
+	
+</script>
 
 
 </html>
