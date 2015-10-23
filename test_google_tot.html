@@ -15,12 +15,17 @@
     <script src="http://code.highcharts.com/modules/exporting.js" type="text/javascript"></script>
     <script src="http://cdnjs.cloudflare.com/ajax/libs/mathjs/2.4.0/math.min.js"></script>
     
-	<!-- Load mathjs librairies -->
+	<!-- Load Mathjs librairy -->
 	<script src="math.min.js" type="text/javascript"></script>
 
+	<!-- Load MathJax librairy -->
+	<script type="text/javascript"  src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+	<script type="text/x-mathjax-config">MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}});</script>
 
-
+	<!-- Load Google chart librairy -->
 	<script type="text/javascript" src="https://www.google.com/jsapi?.js"></script>	
+	<script type="text/javascript" src="graph.js"></script>
+	<link rel="stylesheet" type="text/css" href="graph.css">
 	
 	<!-- Fix to make jQuery Mobile work with local files -->
     <script>
@@ -29,8 +34,7 @@
             $.mobile.pushStateEnabled = false;
         });
     </script>
-	
-    <script src="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js"></script>
+	<script src="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js"></script>
     
 	<!-- Load "var data" from my_data.js-->
 	<script src="./my_data_min_2.js" type="text/javascript"></script>
@@ -40,17 +44,50 @@
 	
 	<!-- Create view -->
 	<script type="text/javascript">
+		
+		// Create variables with a global scope to store : LineChart object and DataTable object
+		var data_table;
+		var chart;
+		
+		// Refresh variable
+		var timeoutRefreshGraph ;
+		
+		// Define options for the LineChart
+		var options = {
+				chart: {
+				  title: 'Titre',
+				  subtitle: 'Sous-titre'
+				},
+				width:  "100%",
+                height: "350px",
+				explorer: {
+					keepInBounds : true
+				}
+				
+			}
 			
-		// Create a variable with a global scope to store the chart object
-        var chart ; 
-        // A bit tricky, see at the end for some explanation about this variable
-        var timeoutRefreshGraph ;
-
-        // Define a function to update the graph
-        function updateGraph()
-        {
-            // Get the first serie of the graph, and the value of the slider
-            var serie       = $(chart).highcharts().series[0] ;
+		function drawChart() {
+			
+			// Instantiate data_table and chart
+			data_table = new google.visualization.DataTable();
+			chart = new google.visualization.LineChart(document.getElementById('ChartContainer'));
+			
+			// Populate the DataTable
+			data_table.addColumn('number', 'sigma');
+			data_table.addColumn('number', 'epsilon');
+			data_table.addRows(Nb_comp);
+			
+			var eto = compute_bis([10,10,10,10,10,10]);
+			
+			for(var i_comp = 0; i_comp < Nb_comp ; i_comp++){
+				data_table.setValue(i_comp,0,sigma[i_comp]);
+				data_table.setValue(i_comp,1,eto[i_comp]);
+			}
+			
+			chart.draw(data_table, options);
+		}
+		
+		function updateChart() {
 			var p0       = $('#slider-0').val() ;
 			var p1       = $('#slider-1').val() ;
 			var p2       = $('#slider-2').val() ;
@@ -58,161 +95,109 @@
 			var p4       = $('#slider-4').val() ;
 			var p5       = $('#slider-5').val() ;
 			
-            var new_data        = [] ;
-            
-			// Populate the array of data
-            new_data = compute([p0,p1,p2,p3,p4,p5]);
+			var eto = compute_bis([p0,p1,p2,p3,p4,p5]);
 			
-            // Update the serie data and redraw the graph
-            serie.setData(new_data) ;
+			for(var i_comp = 0; i_comp < Nb_comp ; i_comp++){
+				data_table.setValue(i_comp,1,eto[i_comp]);
+			}	
 			
 			
-        }
-
-        // Part to make sure the page is properly loaded (HTML + Javascript)
-        $(function() 
-        {            
-            // Create the chart
-            chart = $('#container').highcharts({
-                chart: {
-					zoomType: 'xy',
-					animation : false,
-					type: 'scatter'
-                },
-                title: {
-                    text: 'Epsilon vs Sigma',
-                    x: -20 //center
-                },
-				xAxis: {
-					allowDecimals: true,
-					
-					title: {
-						text: 'Sigma'
-					}
-				},
-                yAxis: {
-                    title: {
-                        text: 'Epsilon'
-                    },
-                    plotLines: [{
-                        value: 0,
-                        width: 1,
-                        color: '#808080'
-                    }],
-					min: -0.1,
-					max: 0.1
-                },
-                legend: {
-                    layout: 'vertical',
-                    align: 'right',
-                    verticalAlign: 'middle',
-                    borderWidth: 0
-                },
-                plotOptions: {
-                    series: {
-                        lineWidth: 2,
-						animation : false,
-						marker: {
-							enabled: false
-						}
-                    },
-                },
-                series: [{
-                    name: 'Sigma',
-                    data: compute([10,10,10,10,10,10])
-                }]
-            });
-			
-			
-            // For all input tags that are contained in the 
-            // variables form, update the graph if its values
-            // has changed
-            $(".formVariables input").on('change', function()
-            {
-                clearTimeout(timeoutRefreshGraph) ;
-
-                timeoutRefreshGraph = setTimeout(function() 
-                {
-                    updateGraph() ;
-                }, 10);
-            }) ;
-			
-			
-
-        });
+			chart.draw(data_table,options);
+		};
 		
-    </script>
-	
-<script type="text/javascript">
-    google.load('visualization', '1.1', {packages: ['corechart'], callback: drawChart});
-    
-    function drawChart() {
+		
+		google.load('visualization', '1.1', {packages: ['corechart'], callback: drawChart});
+		
+		$(function(){  
+			// For all input tags that are contained in the 
+			// variables form, update the graph if its values
+			// has changed
+				
+			$(".sliders input").on('change', function(){
+				clearTimeout(timeoutRefreshGraph) ;
 
-      var data = new google.visualization.DataTable();
-      data.addColumn('number', 'X');
-      data.addColumn('number', 'Y');
-      
-      data.addRows([
-        [1,  37.8],
-        [2,  30.9],
-        [3,  25.4],
-        [4,  11.7],
-    ]);
-	
-      var options = {
-        chart: {
-          title: 'Box Office Earnings in First Two Weeks of Opening',
-          subtitle: 'in millions of dollars (USD)'
-        },
-        width: 900,
-        height: 500,
-		explorer: {
-            axis: 'horizontal',
+				timeoutRefreshGraph = setTimeout(function() 
+				{
+					updateChart() ;
+				}, 10);
+			});
+
+		});
+			
+		
+	</script>
+	<script type="text/javascript">
+        google.load("visualization", "1");
+
+        // Set callback to run when API is loaded
+        google.setOnLoadCallback(drawVisualization);
+
+        // Called when the Visualization API is loaded.
+        function drawVisualization() {
+            // Create and populate a data table.
+            var data = new google.visualization.DataTable();
+            
+            // Populate the DataTable
+			data.addColumn('number', 'sigma');
+			data.addColumn('number', 'epsilon');
+			data.addRows(Nb_comp);
+			
+			var eto = compute_bis([10,10,10,10,10,10]);
+			
+			for(var i_comp = 0; i_comp < Nb_comp ; i_comp++){
+				data.setValue(i_comp,0,sigma[i_comp]);
+				data.setValue(i_comp,1,eto[i_comp]);
+			}
+
+            // specify options
+            var options2 = {
+				width:  "100%",
+                height: "350px",
+            };
+
+            // Instantiate our graph object.
+            var graph = new links.Graph(document.getElementById('mygraph'));
+
+            // Draw our graph with the created data and options
+            graph.draw(data, options2);
         }
-      };
-
-      //var chart = new google.charts.Line(document.getElementById('linechart_material'));
-	  
-	  var chart = new google.visualization.LineChart(document.getElementById('linechart_material'));
-
-      chart.draw(data, options);
-    }
-	
-  </script>
-
+    </script>
 </head>
 <body>
 
-	<div id="linechart_material"></div>
+	<div id="mygraph"></div>
+
+	
+	<div id="ChartContainer"></div>
 
     
-    <form class="formVariables">
-       <label for="slider-0">Input slider:</label>
+    <form class="sliders">
+       <label for="slider-0">$n$</label>
        <input type="range" name="slider" id="slider-0" value="10" min="0" max="19"  />
     </form>
 	
-	<form class="formVariables">
-       <label for="slider-1">Input slider:</label>
+	<form class="sliders">
+       <label for="slider-1">$K$</label>
        <input type="range" name="slider" id="slider-1" value="10" min="0" max="19"  />
     </form>
 	
-	<form class="formVariables">
-       <label for="slider-2">Input slider:</label>
+	<form class="sliders">
+       <label for="slider-2">$R_0$</label>
        <input type="range" name="slider" id="slider-2" value="10" min="0" max="19"  />
     </form>
 	
-	<form class="formVariables">
-       <label for="slider-3">Input slider:</label>
+	<form class="sliders">
+       <label for="slider-3">$Q$</label>
        <input type="range" name="slider" id="slider-3" value="10" min="0" max="19"  />
     </form>
 	
-	<form class="formVariables">
-       <label for="slider-4">Input slider:</label>
+	<form class="sliders">
+       <label for="slider-4">$b$</label>
        <input type="range" name="slider" id="slider-4" value="10" min="0" max="19"  />
     </form>
 	
-	<form class="formVariables">
-       <label for="slider-5">Input slider:</label>
+	<form class="sliders">
+       <label for="slider-5">$C$</label>
        <input type="range" name="slider" id="slider-5" value="10" min="0" max="19"  />
     </form>
 
