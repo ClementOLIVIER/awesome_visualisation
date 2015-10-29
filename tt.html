@@ -1,0 +1,150 @@
+<html>
+
+	<script type="text/javascript" src="http://underscorejs.org/underscore-min.js"></script>	
+	<script type="text/javascript" src="d3.v3.min.js"></script>
+	<link rel="stylesheet" href="d3.css" />	
+	
+	<script src="./my_simple_data.js" type="text/javascript"></script>
+	
+  <body>
+    <svg id="visualisation" width="1000" height="500"></svg>
+  </body>
+  
+  <script type="text/javascript">
+		
+		InitChart();
+		
+		function InitChart(){
+		
+		var margin = {top: 30, right: 10, bottom: 20, left: 60},
+			width = 960 - margin.left - margin.right,
+			height = 500 - margin.top - margin.bottom;
+		
+		var xMax = d3.max(data, function(d) { return +d.x_data; }),
+			xMin = d3.min(data, function(d) { return +d.x_data; }),
+			yMax = d3.max(data, function(d) { return +d.y_data; }),
+			yMin = d3.min(data, function(d) { return +d.y_data; });
+		
+		//Define scales
+		var xRange = d3.scale.linear()
+			.domain([xMin, xMax])
+			.range([0, width]);
+			
+		var yRange = d3.scale.linear()
+			.domain([yMin, yMax])
+			.range([height, 0]);
+			
+		var colourScale = function(val){
+			var colours = ['#9d3d38','#c5653a','#f9b743','#9bd6d7'];
+			if (val > 30) {
+				return colours[0];
+			} else if (val > 10) {
+				return colours[1];
+			} else if (val > 0) {
+				return colours[2];
+			} else {
+				return colours[3];
+			}
+		};
+		
+		
+		//Define X axis
+		var xAxis = d3.svg.axis()
+			.scale(xRange)
+			.orient("bottom")
+			.tickSize(-height)
+			.tickFormat(d3.format("s"));
+		
+		//Define Y axis
+		var yAxis = d3.svg.axis()
+			.scale(yRange)
+			.orient("left")
+			.ticks(8)
+			.tickSize(-width)
+			.tickFormat(d3.format("s"));
+		
+        var zm = d3.behavior.zoom()
+			.x(xRange)
+			.y(yRange)
+			.scaleExtent([.5, 8])
+			.on("zoom", zoom)
+
+		var vis = d3.select("#visualisation")
+			.attr("width", width + margin.left + margin.right)
+			.attr("height", height + margin.top + margin.bottom)
+			.append("g")
+			.attr("transform", "translate(" + margin.left + "," + margin.top + ")")
+			.call(zm);
+		
+		vis.append("rect")
+			.attr("width", width)
+			.attr("height", height);
+		
+		vis.append("g")
+			.attr("class", "x axis")
+			.attr("transform", "translate(0," + height + ")")
+			.call(xAxis);
+		
+		vis.append("g")
+			.attr("class", "y axis")
+			.call(yAxis);
+
+		
+		var poly = vis.selectAll("polygon")
+			.data(data)
+			.enter()
+			.append("polygon")
+	        .attr("class","hex")
+			.attr("transform", function(d, i) {
+				return "translate("+xRange(d.x_data)+","+yRange(d.y_data)+")";
+			})
+			.attr('points','4.569,2.637 0,5.276 -4.569,2.637 -4.569,-2.637 0,-5.276 4.569,-2.637')
+			.attr("opacity","0.8")
+			.attr("fill",function(d) {
+				return colourScale(d.c_data);
+			});
+			
+		var lineFunc = d3.svg.line()
+			.x(function (d) {
+				return xRange(d.x_data);
+			})
+			.y(function (d) {
+				return yRange(d.y_data);
+			})
+			.interpolate('linear');
+		
+		vis.append("svg:path")
+			.attr("d", lineFunc(data))
+			.attr("class","line")
+			.attr("stroke", "blue")
+			.attr("stroke-width", 2)
+			.attr("fill", "none");
+
+		/*vis.append("svg:path")
+			.data(data)
+			.attr("class","lineFunc")
+			.attr("d",lineFunc)
+			.attr("stroke", "blue")
+			.attr("stroke-width", 2)
+			.attr("fill", "none");*/
+		
+		
+		function zoom() {
+			vis.select(".x.axis").call(xAxis);
+			vis.select(".y.axis").call(yAxis);
+			vis.selectAll("polygon")			
+				.attr("transform", function(d, i) {
+				return "translate("+xRange(d.x_data)+","+yRange(d.y_data)+")";
+			});
+			vis.select(".line")
+				.attr("class","line")
+				.attr("d",lineFunc(data));
+		}
+		
+		
+	}	
+	
+	
+	</script>
+	
+</html>

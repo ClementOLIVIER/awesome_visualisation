@@ -9,6 +9,8 @@
     <!-- Load CSS -->
     <link rel="stylesheet" href="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.css" />	
     
+	<link rel="stylesheet" href="d3.css" />	
+	
     <!-- Load javascript librairies in the right order -->
     <script src="http://code.jquery.com/jquery-1.9.1.min.js"></script>
     <script src="http://code.highcharts.com/highcharts.js" type="text/javascript"></script>
@@ -30,7 +32,10 @@
 	<script src="dist/vis.js"></script>
 	<link href="dist/vis.css" rel="stylesheet" type="text/css" />
   
-  
+	<!-- Load D3 librairy -->
+	<script type="text/javascript" src="http://underscorejs.org/underscore-min.js"></script>	
+	<script type="text/javascript" src="d3.v3.min.js"></script>
+	
 	<!-- Fix to make jQuery Mobile work with local files -->
     <script>
         $(document).bind('mobileinit',function()
@@ -139,18 +144,18 @@
         // Called when the Visualization API is loaded.
         function drawVisualization() {
             // Create and populate a data table.
-            var data = new google.visualization.DataTable();
+            var data2 = new google.visualization.DataTable();
             
             // Populate the DataTable
-			data.addColumn('number', 'sigma');
-			data.addColumn('number', 'epsilon');
-			data.addRows(Nb_comp);
+			data2.addColumn('number', 'sigma');
+			data2.addColumn('number', 'epsilon');
+			data2.addRows(Nb_comp);
 			
 			var eto = compute_bis([10,10,10,10,10,10]);
 			
 			for(var i_comp = 0; i_comp < Nb_comp ; i_comp++){
-				data.setValue(i_comp,0,sigma[i_comp]);
-				data.setValue(i_comp,1,eto[i_comp]);
+				data2.setValue(i_comp,0,sigma[i_comp]);
+				data2.setValue(i_comp,1,eto[i_comp]);
 			}
 
             // specify options
@@ -163,15 +168,16 @@
             var graph = new links.Graph(document.getElementById('mygraph'));
 
             // Draw our graph with the created data and options
-            graph.draw(data, options2);
+            graph.draw(data2, options2);
         }
     </script>
+	
 	
 
 
 </head>
 <body>
-
+	
 <!--<div id="visualization"></div>-->
 
 	<!--<div id="mygraph"></div>-->
@@ -227,6 +233,114 @@
   var graph2d = new vis.Graph2d(container, dataset);
 
 </script>
+<svg/>
+<script type="text/javascript">
+	var data = [{"OccupationTitle":"Postal Service Mail Sorters, Processors, and Processing Machine Operators","Category":"Office and Administrative Support Occupations","TotalEmployed2011":"139700","MedianSalary2011":"53080","ProjectedGrowth2020":"-48.5"},{"OccupationTitle":"Postal Service Clerks","Category":"Office and Administrative Support Occupations","TotalEmployed2011":"65040","MedianSalary2011":"53100","ProjectedGrowth2020":"-48.2"},{"OccupationTitle":"Postmasters and Mail Superintendents","Category":"Management Occupations","TotalEmployed2011":"24410","MedianSalary2011":"62920","ProjectedGrowth2020":"-27.8"},{"OccupationTitle":"Petroleum Pump System Operators, Refinery Operators, and Gaugers","Category":"Production Occupations","TotalEmployed2011":"41570","MedianSalary2011":"61260","ProjectedGrowth2020":"-14"},{"OccupationTitle":"Chemical Plant and System Operators","Category":"Production Occupations","TotalEmployed2011":"40580","MedianSalary2011":"55940","ProjectedGrowth2020":"-12.2"},{"OccupationTitle":"Postal Service Mail Carriers","Category":"Office and Administrative Support Occupations","TotalEmployed2011":"315330","MedianSalary2011":"55160","ProjectedGrowth2020":"-12"},{"OccupationTitle":"Insurance Appraisers, Auto Damage","Category":"Business and Financial Operations Occupations","TotalEmployed2011":"67550","MedianSalary2011":"51040","ProjectedGrowth2020":"45.7"},{"OccupationTitle":"Biomedical Engineers","Category":"Architecture and Engineering Occupations","TotalEmployed2011":"16590","MedianSalary2011":"84670","ProjectedGrowth2020":"61.7"}]
+
+		var margin = {top: 30, right: 10, bottom: 20, left: 60},
+			width = 960 - margin.left - margin.right,
+			height = 500 - margin.top - margin.bottom;
+		
+		var xMax = d3.max(data, function(d) { return +d.TotalEmployed2011; }),
+			xMin = 0,
+			yMax = d3.max(data, function(d) { return +d.MedianSalary2011; }),
+			yMin = 0;
+		
+		//Define scales
+		var x = d3.scale.linear()
+			.domain([xMin, xMax])
+			.range([0, width]);
+			
+		var y = d3.scale.linear()
+			.domain([yMin, yMax])
+			.range([height, 0]);
+			
+		var colourScale = function(val){
+			var colours = ['#9d3d38','#c5653a','#f9b743','#9bd6d7'];
+			if (val > 30) {
+				return colours[0];
+			} else if (val > 10) {
+				return colours[1];
+			} else if (val > 0) {
+				return colours[2];
+			} else {
+				return colours[3];
+			}
+		};
+		
+		
+		//Define X axis
+		var xAxis = d3.svg.axis()
+			.scale(x)
+			.orient("bottom")
+			.tickSize(-height)
+			.tickFormat(d3.format("s"));
+		
+		//Define Y axis
+		var yAxis = d3.svg.axis()
+			.scale(y)
+			.orient("left")
+			.ticks(5)
+			.tickSize(-width)
+			.tickFormat(d3.format("s"));
+		
+        var zm = d3.behavior.zoom().x(x).y(y).scaleExtent([1, 8]).on("zoom", zoom)
+
+		var svg = d3.select("svg")
+			.attr("width", width + margin.left + margin.right)
+			.attr("height", height + margin.top + margin.bottom)
+			.append("g")
+			.attr("transform", "translate(" + margin.left + "," + margin.top + ")")
+			.call(zm);
+		
+		svg.append("rect")
+			.attr("width", width)
+			.attr("height", height);
+		
+		svg.append("g")
+			.attr("class", "x axis")
+			.attr("transform", "translate(0," + height + ")")
+			.call(xAxis);
+		
+		svg.append("g")
+			.attr("class", "y axis")
+			.call(yAxis);
+
+		
+		var poly = svg.selectAll("polygon")
+			.data(data)
+			.enter()
+			.append("polygon")
+	        .attr("class","hex")
+			.attr("transform", function(d, i) {
+				return "translate("+x(d.TotalEmployed2011)+","+y(d.MedianSalary2011)+")";
+			})
+			.attr('points','4.569,2.637 0,5.276 -4.569,2.637 -4.569,-2.637 0,-5.276 4.569,-2.637')
+			.attr("opacity","0.8")
+			.attr("fill",function(d) {
+				return colourScale(d.ProjectedGrowth2020);
+			});
+		
+		
+		function zoom() {
+		  svg.select(".x.axis").call(xAxis);
+		  svg.select(".y.axis").call(yAxis);
+          svg.selectAll("polygon")			
+            .attr("transform", function(d, i) {
+				return "translate("+x(d.TotalEmployed2011)+","+y(d.MedianSalary2011)+")";
+			})
+	        .attr('points','4.569,2.637 0,5.276 -4.569,2.637 -4.569,-2.637 0,-5.276 4.569,-2.637')
+		}
+
+d3.select("svg").append('rect').attr({x: 10, y: 10, width: 16, height: 16})
+    .style('fill','skyblue')
+.on('click', function() {
+        zm.scale(zm.scale() * 2);
+        zoom();
+    });
+	
+	
+	</script>
 </body>
 
 
