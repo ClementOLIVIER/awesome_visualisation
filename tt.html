@@ -1,20 +1,43 @@
+<!DOCTYPE html>
 <html>
 
+<head>
+
+	<title>Page Title</title>
+
+
+	<meta name="viewport" content="width=device-width, initial-scale=1"> 
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	
+	<!-- Load CSS -->
+    <link rel="stylesheet" href="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.css" />	
+    
+	<!-- Load javascript librairies in the right order -->
+    <script src="http://code.jquery.com/jquery-1.9.1.min.js"></script>
+    <script src="http://code.highcharts.com/highcharts.js" type="text/javascript"></script>
+    <script src="http://code.highcharts.com/modules/exporting.js" type="text/javascript"></script>
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/mathjs/2.4.0/math.min.js"></script>
+	
+	
 	<script type="text/javascript" src="http://underscorejs.org/underscore-min.js"></script>	
 	<script type="text/javascript" src="d3.v3.min.js"></script>
 	<link rel="stylesheet" href="d3.css" />	
 	
+	<!-- Load "var data" from my_simple_data.js-->
 	<script src="./my_simple_data.js" type="text/javascript"></script>
 	
-  <body>
-    <svg id="visualisation" width="1000" height="500"></svg>
-  </body>
-  
-  <script type="text/javascript">
-		
-		InitChart();
-		
-		function InitChart(){
+	<!-- Fix to make jQuery Mobile work with local files -->
+    <script>
+        $(document).bind('mobileinit',function()
+        {
+            $.mobile.pushStateEnabled = false;
+        });
+    </script>
+	<script src="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js"></script>
+    
+	<!-- Create view -->
+	<script type="text/javascript">		
+	function InitChart(){
 		
 		var margin = {top: 30, right: 10, bottom: 20, left: 60},
 			width = 960 - margin.left - margin.right,
@@ -63,7 +86,7 @@
 			.tickSize(-width)
 			.tickFormat(d3.format("s"));
 		
-        var zm = d3.behavior.zoom()
+		var zm = d3.behavior.zoom()
 			.x(xRange)
 			.y(yRange)
 			.scaleExtent([.5, 8])
@@ -94,7 +117,7 @@
 			.data(data)
 			.enter()
 			.append("polygon")
-	        .attr("class","hex")
+			.attr("class","hex")
 			.attr("transform", function(d, i) {
 				return "translate("+xRange(d.x_data)+","+yRange(d.y_data)+")";
 			})
@@ -120,14 +143,6 @@
 			.attr("stroke-width", 2)
 			.attr("fill", "none");
 
-		/*vis.append("svg:path")
-			.data(data)
-			.attr("class","lineFunc")
-			.attr("d",lineFunc)
-			.attr("stroke", "blue")
-			.attr("stroke-width", 2)
-			.attr("fill", "none");*/
-		
 		
 		function zoom() {
 			vis.select(".x.axis").call(xAxis);
@@ -136,15 +151,26 @@
 				.attr("transform", function(d, i) {
 				return "translate("+xRange(d.x_data)+","+yRange(d.y_data)+")";
 			});
-			vis.select(".line")
+			vis.select(".line")	
 				.attr("class","line")
 				.attr("d",lineFunc(data));
 		}
 		
 		
-	}	
-	
-	
+	}
+	InitChart();
 	</script>
+	
+	
+</head>
+
+
+<body>
+	<svg id="visualisation" width="1000" height="500"></svg>
+</body>
+  
+<script type="text/javascript">
+	InitChart();
+</script>
 	
 </html>
