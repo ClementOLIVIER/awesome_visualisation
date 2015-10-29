@@ -8,34 +8,69 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1"> 
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 	
+	<!-- Load javascript librairies in the right order -->
+    	<script src="http://code.jquery.com/jquery-1.9.1.min.js"></script>
+	<script src="http://code.jquery.com/ui/1.9.2/jquery-ui.js"></script>
+
+
+		<!-- Load Mathjs librairy -->
+	<script src="math.min.js" type="text/javascript"></script>
+
+
+	<!-- Load MathJax librairy -->
+	<script type="text/javascript"  src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+	<script type="text/x-mathjax-config">MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}});</script>
+
+	
+	
 	<script type="text/javascript" src="http://underscorejs.org/underscore-min.js"></script>	
 	<script type="text/javascript" src="d3.v3.min.js"></script>
 	<link rel="stylesheet" href="d3.css" />	
 	
-	<!-- Load "var data" from my_simple_data.js-->
+	<!-- Load "var simple_data" from my_simple_data.js-->
 	<script src="./my_simple_data.js" type="text/javascript"></script>
 	
-	<!-- Fix to make jQuery Mobile work with local files -->
-    <script>
-        $(document).bind('mobileinit',function()
-        {
-            $.mobile.pushStateEnabled = false;
-        });
-    </script>
-	<script src="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js"></script>
-    
+	<!-- Load "var data" from my_data.js-->
+	<script src="./my_data_min_2.js" type="text/javascript"></script>
+	
+	<!-- Parse data with mathjs and define compute function-->
+	<script src="./parse_and_compute.js" type="text/javascript"></script>
+	
+	
+	
+	<link rel="stylesheet" href="d3.slider.css" />
+	<script src="d3.slider.js"></script>
+	
 	<!-- Create view -->
-	<script type="text/javascript">		
+	<script type="text/javascript">
+	var data_Chart;
+	
+	// Refresh variable
+	var timeoutRefreshGraph ;
+	
 	function InitChart(){
 		
+		//Compute initial data
+		
+		var data_array = compute([10,10,10,10,10,10]);
+		
+		
+		data_Chart = data_array.map(function(d) {
+									return {
+										x_data: d[0],
+										y_data: d[1]
+									};
+								});
+
+		//Plot Chart
 		var margin = {top: 30, right: 10, bottom: 20, left: 60},
 			width = 960 - margin.left - margin.right,
 			height = 500 - margin.top - margin.bottom;
 		
-		var xMax = d3.max(data, function(d) { return +d.x_data; }),
-			xMin = d3.min(data, function(d) { return +d.x_data; }),
-			yMax = d3.max(data, function(d) { return +d.y_data; }),
-			yMin = d3.min(data, function(d) { return +d.y_data; });
+		var xMax = d3.max(data_Chart, function(d) { return +d.x_data; }),
+			xMin = d3.min(data_Chart, function(d) { return +d.x_data; }),
+			yMax = d3.max(data_Chart, function(d) { return +d.y_data; }),
+			yMin = d3.min(data_Chart, function(d) { return +d.y_data; });
 		
 		//Define scales
 		var xRange = d3.scale.linear()
@@ -46,28 +81,13 @@
 			.domain([yMin, yMax])
 			.range([height, 0]);
 			
-		var colourScale = function(val){
-			var colours = ['#9d3d38','#c5653a','#f9b743','#9bd6d7'];
-			if (val > 30) {
-				return colours[0];
-			} else if (val > 10) {
-				return colours[1];
-			} else if (val > 0) {
-				return colours[2];
-			} else {
-				return colours[3];
-			}
-		};
-		
-		
-		//Define X axis
+		//Define X,Y axis
 		var xAxis = d3.svg.axis()
 			.scale(xRange)
 			.orient("bottom")
 			.tickSize(-height)
 			.tickFormat(d3.format("s"));
 		
-		//Define Y axis
 		var yAxis = d3.svg.axis()
 			.scale(yRange)
 			.orient("left")
@@ -75,12 +95,15 @@
 			.tickSize(-width)
 			.tickFormat(d3.format("s"));
 		
+		//Define Zoom behavior
 		var zm = d3.behavior.zoom()
 			.x(xRange)
 			.y(yRange)
 			.scaleExtent([.5, 8])
 			.on("zoom", zoom)
 
+		
+		//Define chart
 		var vis = d3.select("#visualisation")
 			.attr("width", width + margin.left + margin.right)
 			.attr("height", height + margin.top + margin.bottom)
@@ -103,7 +126,7 @@
 
 		
 		var poly = vis.selectAll("polygon")
-			.data(data)
+			.data(data_Chart)
 			.enter()
 			.append("polygon")
 			.attr("class","hex")
@@ -112,9 +135,7 @@
 			})
 			.attr('points','4.569,2.637 0,5.276 -4.569,2.637 -4.569,-2.637 0,-5.276 4.569,-2.637')
 			.attr("opacity","0.8")
-			.attr("fill",function(d) {
-				return colourScale(d.c_data);
-			});
+			.attr("fill","#9d3d38");
 			
 		var lineFunc = d3.svg.line()
 			.x(function (d) {
@@ -123,10 +144,10 @@
 			.y(function (d) {
 				return yRange(d.y_data);
 			})
-			.interpolate('linear');
+			.interpolate('basis');
 		
 		vis.append("svg:path")
-			.attr("d", lineFunc(data))
+			.attr("d", lineFunc(data_Chart))
 			.attr("class","line")
 			.attr("stroke", "blue")
 			.attr("stroke-width", 2)
@@ -142,11 +163,44 @@
 			});
 			vis.select(".line")	
 				.attr("class","line")
-				.attr("d",lineFunc(data));
+				.attr("d",lineFunc(data_Chart));
 		}
 		
+		function updateChart() {
+			var p0       = $('#slider-0').val() ;
+			var p1       = $('#slider-1').val() ;
+			var p2       = $('#slider-2').val() ;
+			var p3       = $('#slider-3').val() ;
+			var p4       = $('#slider-4').val() ;
+			var p5       = $('#slider-5').val() ;
+			
+			var data_array = compute([p0,p1,p2,p3,p4,p5]);
 		
+			data_Chart = data_array.map(function(d) {
+										return {
+											x_data: d[0],
+											y_data: d[1]
+										};
+									});
+								
+
+			vis.select(".line")
+				.attr("class","line")
+				.attr("d",lineFunc(data_Chart));
+		};
+			
+		$(".sliders input").on('input', function(){
+				clearTimeout(timeoutRefreshGraph) ;
+
+				timeoutRefreshGraph = setTimeout(function() 
+				{
+					updateChart() ;
+				}, 10);
+			});
+
 	}
+
+
 	</script>
 	
 	
@@ -155,10 +209,44 @@
 
 <body>
 	<svg id="visualisation" width="1000" height="500"></svg>
+
+	<form class="sliders">
+       <label for="slider-0">$n$</label>
+       <input type="range" name="slider" id="slider-0" value="10" min="0" max="19"  />
+    </form>
+	
+	<form class="sliders">
+       <label for="slider-1">$K$</label>
+       <input type="range" name="slider" id="slider-1" value="10" min="0" max="19"  />
+    </form>
+	
+	<form class="sliders">
+       <label for="slider-2">$R_0$</label>
+       <input type="range" name="slider" id="slider-2" value="10" min="0" max="19"  />
+    </form>
+	
+	<form class="sliders">
+       <label for="slider-3">$Q$</label>
+       <input type="range" name="slider" id="slider-3" value="10" min="0" max="19"  />
+    </form>
+	
+	<form class="sliders">
+       <label for="slider-4">$b$</label>
+       <input type="range" name="slider" id="slider-4" value="10" min="0" max="19"  />
+    </form>
+	
+	<form class="sliders">
+       <label for="slider-5">$C$</label>
+       <input type="range" name="slider" id="slider-5" value="10" min="0" max="19"  />
+    </form>
+	
+	
+	
 </body>
   
 <script type="text/javascript">
 	InitChart();
+	
 </script>
 	
 </html>
